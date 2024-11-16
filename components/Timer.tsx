@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import useTimer from "@/hooks/useTimer";
 
 interface TimerProps {
   timeLeft: number;
@@ -16,7 +15,6 @@ const Timer: React.FC<TimerProps> = ({
   timeLeft,
   isRunning,
   start,
-  pause,
   restart,
   formatTime,
 }) => {
