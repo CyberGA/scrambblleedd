@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Timer from "./Timer";
 import { wordList } from "@/libs/word-lists";
+import useTimer from "@/hooks/useTimer";
 
 interface GameProps {
   incrementScore: () => void;
@@ -21,6 +22,16 @@ const getRandomIndex = (listLength: number) => {
 };
 
 const Game: React.FC<GameProps> = ({ incrementScore }) => {
+  const resetGame = () => {
+    const index = getRandomIndex(wordList.length);
+    setCurrentWordIndex(index);
+    setScrambledWord(scrambleWord(wordList[index].word));
+  };
+
+  const { timeLeft, isRunning, start, pause, restart, formatTime } = useTimer(
+    60,
+    resetGame
+  );
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [scrambledWord, setScrambledWord] = useState("");
   const [guess, setGuess] = useState("");
@@ -34,6 +45,10 @@ const Game: React.FC<GameProps> = ({ incrementScore }) => {
   }, []);
 
   const handleGuess = () => {
+    if (!guess.trim()) {
+      setFeedback("Please enter a guess!");
+      return;
+    }
     const currentWord = wordList[currentWordIndex].word;
     if (guess.trim().toLowerCase() === currentWord.toLowerCase()) {
       setFeedback("Correct!");
@@ -64,13 +79,15 @@ const Game: React.FC<GameProps> = ({ incrementScore }) => {
       <div className="flex gap-4">
         <button
           onClick={handleGuess}
-          className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600"
+          disabled={!isRunning}
+          className="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 disabled:cursor-not-allowed"
         >
           Submit
         </button>
         <button
           onClick={() => setHintVisible(!hintVisible)}
-          className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400"
+          disabled={!isRunning}
+          className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400 disabled:cursor-not-allowed"
         >
           {hintVisible ? "Hide Hint" : "Show Hint"}
         </button>
@@ -81,7 +98,14 @@ const Game: React.FC<GameProps> = ({ incrementScore }) => {
         </p>
       )}
       <p className="mt-4 text-lg font-semibold">{feedback}</p>
-      <Timer resetGame={() => setCurrentWordIndex(0)} />
+      <Timer
+        timeLeft={timeLeft}
+        isRunning={isRunning}
+        start={start}
+        pause={pause}
+        restart={restart}
+        formatTime={formatTime}
+      />
     </div>
   );
 };
